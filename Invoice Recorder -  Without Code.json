@@ -1,0 +1,929 @@
+{
+  "name": "Invoice Recorder",
+  "nodes": [
+    {
+      "parameters": {
+        "html": "={{ $('Get Required Data').item.json.email_bodyasHTML }}",
+        "destinationKey": "email",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [
+        432,
+        64
+      ],
+      "id": "fa122296-b7af-44cc-9aab-ec96891714e5",
+      "name": "Simple Email"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d252bac8-4449-4818-b971-75001f1dea4b",
+              "name": "email_id",
+              "value": "={{ $('Get Email').item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "2e558c7a-6716-4542-a679-a96158fcf145",
+              "name": "email_from",
+              "value": "={{ $('Get Email').item.json.headers.from }}",
+              "type": "string"
+            },
+            {
+              "id": "108c4638-1bfe-41df-bfe2-f541f107a0ec",
+              "name": "email_subject",
+              "value": "={{ $('Get Email').item.json.subject }}",
+              "type": "string"
+            },
+            {
+              "id": "45168761-b7a6-44c1-9887-8bfb6c901d64",
+              "name": "email_on_date",
+              "value": "={{ $('Get Email').item.json.date }}",
+              "type": "string"
+            },
+            {
+              "id": "5293e6d6-b029-4f78-bfc8-c24889c6898f",
+              "name": "email_bodyasHTML",
+              "value": "={{ $('Get Email').item.json.textAsHtml }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        64
+      ],
+      "id": "068328fb-adf4-4e71-95b6-66e4282b7285",
+      "name": "Get Required Data"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "attachment_0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        208,
+        -128
+      ],
+      "id": "047afe2b-0d9e-442f-a473-248e7100fc63",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ca2f43f8-fd00-45f1-9cdc-826a5333b59a",
+              "name": "Invoice_File_Date",
+              "value": "={{ $json.metadata['xmp:createdate'] }}",
+              "type": "string"
+            },
+            {
+              "id": "7480cc50-099b-4871-b2af-df91ff7fdd8f",
+              "name": "invoice",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "fd24bbf0-1e12-4177-b105-3def818951cc",
+              "name": "email_id",
+              "value": "={{ $('Get Email').item.json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        432,
+        -128
+      ],
+      "id": "01ea35fa-7fab-4419-a546-dba556e2001c",
+      "name": "Attachment"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "email_id",
+        "joinMode": "keepEverything",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        880,
+        -112
+      ],
+      "id": "e9fb9378-1eb0-4645-80e1-ef908c16fd74",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one \nfor (const item of $input.all()) {\n  const email = item.json.invoice || '';\n\n  // Clean email: remove all newlines/formatting except commas and dots\n  const cleaned = email\n    .replace(/\\n/g, ' ')               // Replace newlines with space\n    .replace(/\\r/g, ' ')               // Replace carriage returns\n    .replace(/\\s+/g, ' ')              // Collapse multiple spaces\n    .replace(/[^a-zA-Z0-9@., ]/g, '')  // Keep only alphanumeric, @, dot, comma, and space\n    .trim();                           // Remove leading/trailing spaces\n\n  item.json.invoice = cleaned;\n}\n\nreturn $input.all();\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        -128
+      ],
+      "id": "88ec4bc8-2b7d-4cc8-bd25-42596a7d59a4",
+      "name": "Invoice"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one \nfor (const item of $input.all()) {\n  const email = item.json.email || '';\n\n  // Clean email: remove all newlines/formatting except commas and dots\n  const cleaned = email\n    .replace(/\\n/g, ' ')               // Replace newlines with space\n    .replace(/\\r/g, ' ')               // Replace carriage returns\n    .replace(/\\s+/g, ' ')              // Collapse multiple spaces\n    .replace(/[^a-zA-Z0-9@., ]/g, '')  // Keep only alphanumeric, @, dot, comma, and space\n    .trim();                           // Remove leading/trailing spaces\n\n  item.json.email = cleaned;\n}\n\nreturn $input.all();\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        64
+      ],
+      "id": "504b3a67-dbaa-4200-8767-b1424684c810",
+      "name": "email"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  const lineItems = $input.first().json.output[\"Line items\"] || [];\n\n  const formattedString = lineItems.map(li => {\n    const desc = li.description || '';\n    const qty = li.quantity || 0;\n    const rate = li.rate || 0;\n    const amt = li.amount || 0;\n\n    return `${desc} (${qty} x ${rate} = ${amt})`;\n  }).join(\"\\n\");\n\n  return {\n    json: {\n      Items: formattedString\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        320
+      ],
+      "id": "77c01954-98f9-4923-8a3a-e236158e1c5e",
+      "name": "Line-Items"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -512,
+        -144
+      ],
+      "id": "d93e7000-8786-4bc5-a72f-93aca4912b16",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 1,
+        "simple": false,
+        "filters": {},
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -112,
+        -144
+      ],
+      "id": "247295aa-4d39-4610-ab1c-465141c1c318",
+      "name": "Get Email",
+      "webhookId": "c9ecfab4-ab5e-4de2-beaa-34ba15817316",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -480,
+        80
+      ],
+      "id": "ac079e3c-0a51-4df3-ad77-95f1261e88c7",
+      "name": "One Email at a Time"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Read inputs\nconst itemsRaw = $input.first().json.Items;\n\n// ----------------------------\n// Extract invoice fields\n// ----------------------------\n\nconst supplierName = $('Invoice Info Extractor').first().json.output['Supplier Name'];\nconst description = $('Invoice Info Extractor').first().json.output['Description'];\nconst invoiceNumber = $('Invoice Info Extractor').first().json.output['Invoice Number'];\n\nconst rawinvoiceDate = $('Invoice Info Extractor').first().json.output['Invoice Date'];\nconst invoiceDate = new Date(rawinvoiceDate).toLocaleDateString('en-GB', {\n  day: '2-digit',\n  month: 'short',\n  year: 'numeric'\n}).replace(/ /g, '-');\n\nconst rawDueDate = $('Invoice Info Extractor').first().json.output['Due Date'];\nconst dueDate = new Date(rawDueDate).toLocaleDateString('en-GB', {\n  day: '2-digit',\n  month: 'short',\n  year: 'numeric'\n}).replace(/ /g, '-');\n\nconst rawAmount = $('Invoice Info Extractor').first().json.output['Total Due Amount'];\nconst totalAmount = Number(\n  String(rawAmount).replace(/[^0-9.]/g, '')\n).toLocaleString('en-US');\nconst currency = $('Invoice Info Extractor').first().json.output['Currency'];\n\n// ----------------------------\n// Convert Items To Table\n// ----------------------------\n\nconst items = itemsRaw.split(\"\\n\");\n\nlet tableRows = \"\";\n\nitems.forEach(item => {\n  const match = item.match(/(.+?)\\s*\\((.+?)=\\s*(\\d+)\\)/);\n\n  if (match) {\n    const description = match[1].trim();\n    const calculation = match[2].trim();\n    const amount = Number(match[3].trim()).toLocaleString(\"en-US\");\n\n    tableRows += `\n      <tr>\n        <td style=\"padding:8px;border:1px solid #ddd;text-align:left;\">\n          ${description}\n        </td>\n        <td style=\"padding:8px;border:1px solid #ddd;text-align:center;\">\n          ${calculation}\n        </td>\n        <td style=\"padding:8px;border:1px solid #ddd;text-align:right;\">\n          $${amount}\n        </td>\n      </tr>\n    `;\n  }\n});\n\n\n// ----------------------------\n// Build Final Static HTML Email\n// ----------------------------\n\nconst htmlEmail = `\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n</head>\n<body style=\"font-family: Arial, sans-serif; color:#333; line-height:1.6;\">\n\n<h2 style=\"color:#2c3e50;\">${description}</h2>\n\n<p>Hello Finance Team,</p>\n\n<p>Please find below the invoice summary and cost breakdown for processing:</p>\n\n<h3><u>Invoice Summary</u></h3>\n\n<table cellpadding=\"8\" cellspacing=\"0\" style=\"border-collapse: collapse;\">\n  <tr>\n    <td><strong>Supplier : </strong></td>\n    <td>${supplierName}</td>\n  </tr>\n  <tr>\n    <td><strong>Invoice Number : </strong></td>\n    <td>${invoiceNumber}</td>\n  </tr>\n  <tr>\n    <td><strong>Invoice Date : </strong></td>\n    <td>${invoiceDate}</td>\n  </tr>\n  <tr>\n    <td><strong>Due Date : </strong></td>\n    <td>${dueDate}</td>\n  </tr>\n  <tr>\n    <td><strong>Currency : </strong></td>\n    <td>${currency}</td>\n  </tr>\n  <tr>\n    <td><strong>Total Amount : </strong></td>\n    <td><strong>$${totalAmount}</strong></td>\n  </tr>\n</table>\n\n<br>\n\n<h3><u>Cost Breakdown</u></h3>\n\n<table width=\"50%\" cellpadding=\"8\" cellspacing=\"0\" style=\"border-collapse: collapse;\">\n  <thead>\n    <tr style=\"background:#f2f2f2;\">\n      <th align=\"center\" style=\"border:1px solid #ddd;\">Item</th>\n      <th align=\"center\" style=\"border:1px solid #ddd;\">Qty x Rate</th>\n      <th align=\"center\" style=\"border:1px solid #ddd;\">Amount (${currency})</th>\n    </tr>\n  </thead>\n  <tbody>\n    ${tableRows}\n  </tbody>\n</table>\n\n<br>\n\n<p>Please ensure timely processing before the due date.</p>\n\n<p>\nBest Regards,<br>\n<br>\n<b>Engr Adnan Aslam</b><br>\nFinance Manager<br>\n</p>\n\n</body>\n</html>\n`;\n\n// ----------------------------\n// Return Output For Gmail Node\n// ----------------------------\n\nreturn [\n  {\n    json: {\n      html: htmlEmail,\n      subject: `Invoice ${invoiceNumber} — ${description}`\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        320
+      ],
+      "id": "80fdd86d-72f1-458b-9a17-571ab1dcb77e",
+      "name": "Create Email"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Read input\nconst htmlContent = $('Create Email').first().json.html;\nconst subject = $('Create Email').first().json.subject;\n\n// -----------------------------------\n// Helper: Convert HTML to Clean Text\n// -----------------------------------\n\nfunction htmlToPlainText(html) {\n\n  let text = html;\n\n  // Convert table row breaks into line breaks\n  text = text.replace(/<\\/tr>/gi, '\\n');\n  text = text.replace(/<\\/td>/gi, ' | ');\n  text = text.replace(/<\\/th>/gi, ' | ');\n\n  // Convert block elements into line breaks\n  text = text.replace(/<\\/p>/gi, '\\n\\n');\n  text = text.replace(/<\\/h\\d>/gi, '\\n\\n');\n  text = text.replace(/<br\\s*\\/?>/gi, '\\n');\n\n  // Remove all remaining HTML tags\n  text = text.replace(/<[^>]*>/g, '');\n\n  // Decode common HTML entities\n  text = text.replace(/&nbsp;/g, ' ');\n  text = text.replace(/&amp;/g, '&');\n  text = text.replace(/&lt;/g, '<');\n  text = text.replace(/&gt;/g, '>');\n  text = text.replace(/&quot;/g, '\"');\n\n  // Remove extra spaces\n  text = text.replace(/[ \\t]+/g, ' ');\n\n  // Normalize excessive newlines\n  text = text.replace(/\\n{3,}/g, '\\n\\n');\n\n  return text.trim();\n}\n\n// -----------------------------------\n// Convert HTML → Plain Text\n// -----------------------------------\n\nconst plainTextEmail = htmlToPlainText(htmlContent);\n\n// -----------------------------------\n// Output For Excel / Sheets\n// -----------------------------------\n\nreturn [\n  {\n    json: {\n      subject,\n      plainTextEmail\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        592,
+        320
+      ],
+      "id": "d24739ef-ce38-41a1-8071-80ea595f715a",
+      "name": "Convert email to simple text"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1-0xY-3M-WwTbMac6T8PUvnj8kpsSCQnJU9ScUBm_Mpk",
+          "mode": "list",
+          "cachedResultName": "Invoices",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "FinEmail",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "email_id": "={{ $('Merge').item.json.email_id }}",
+            "email_from": "={{ $('Merge').item.json.email_from }}",
+            "email_subject": "={{ $('Merge').item.json.email_subject }}",
+            "email_on_date": "={{ $('Merge').item.json.email_on_date }}",
+            "Invoice Description": "={{ $('Invoice Info Extractor').item.json.output.Description }}",
+            "Invoice Date": "={{ $('Invoice Info Extractor').item.json.output['Invoice Date'] }}",
+            "Due Date": "={{ $('Invoice Info Extractor').item.json.output['Due Date'] }}",
+            "Supplier Name": "={{ $('Invoice Info Extractor').item.json.output['Supplier Name'] }}",
+            "Invoice Items": "={{ $('Invoice Info Extractor').item.json.output['Line items'] }}",
+            "Total Due Amount": "={{ $('Invoice Info Extractor').item.json.output['Total Due Amount'] }}",
+            "Currency": "={{ $('Invoice Info Extractor').item.json.output.Currency }}",
+            "Items": "={{$('Line-Items').item.json.Items}}",
+            "Invoice Ref": "={{ $('Invoice Info Extractor').item.json.output['Invoice Number'] }}",
+            "received_email": "={{ $('Get Email').item.json.text }}",
+            "Sent_ON": "={{ $now.toLocal().format(\"HH:MM dd-MMM-yyyy\") }}",
+            "Sent_Email": "={{ $json.plainTextEmail }}",
+            "Subject_email": "={{ $json.subject }}"
+          },
+          "matchingColumns": [
+            "email_id"
+          ],
+          "schema": [
+            {
+              "id": "Invoice Ref",
+              "displayName": "Invoice Ref",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Invoice Date",
+              "displayName": "Invoice Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Due Date",
+              "displayName": "Due Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Supplier Name",
+              "displayName": "Supplier Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Invoice Description",
+              "displayName": "Invoice Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Invoice Items",
+              "displayName": "Invoice Items",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Items",
+              "displayName": "Items",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Total Due Amount",
+              "displayName": "Total Due Amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Currency",
+              "displayName": "Currency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email_id",
+              "displayName": "email_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email_from",
+              "displayName": "email_from",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email_subject",
+              "displayName": "email_subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email_on_date",
+              "displayName": "email_on_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "received_email",
+              "displayName": "received_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Subject_email",
+              "displayName": "Subject_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Sent_ON",
+              "displayName": "Sent_ON",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Sent_Email",
+              "displayName": "Sent_Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "useAppend": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        464,
+        528
+      ],
+      "id": "b4be4b20-97c5-40c7-97ec-9d880794cb99",
+      "name": "Email record",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        288
+      ],
+      "id": "52641283-381d-4a25-a7a5-33915b69f042",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c2a1e6bf-bae7-44ca-856b-53ee40319cdb",
+              "leftValue": "={{ $json.headers.subject }}",
+              "rightValue": "invoice",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -272,
+        96
+      ],
+      "id": "cbdf5e9a-75ed-4786-8281-dfcd7e7f0dea",
+      "name": "Is Invoice",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5a2d94b2-53b9-45f4-89b0-7af622d8e521",
+              "leftValue": "={{$('Get Email').item.json.subject.toLowerCase()}}",
+              "rightValue": "invoice",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "3e665676-e9e9-4281-9b32-a3d46ace8a4c",
+              "leftValue": "={{ $('Get Email').item.binary }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -80,
+        96
+      ],
+      "id": "5e7ae0a5-e8df-4499-9788-7236a3ef5ffa",
+      "name": "Contains attachement"
+    },
+    {
+      "parameters": {
+        "text": "=<email>\n{{ $('Merge').item.json.email }}\n</email>\n\n<invoice>\n{{ $json.invoice }}\n</invoice>",
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"Description\": { \"type\": \"string\" },\n    \"Invoice Number\": { \"type\": \"string\" },\n    \"Invoice Date\": { \"type\": \"string\", \"format\": \"date\" },\n    \"Due Date\": { \"type\": \"string\", \"format\": \"date\" },\n    \"Supplier Name\": { \"type\": \"string\" },\n    \"Line items\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"description\": { \"type\": \"string\" },\n          \"quantity\": { \"type\": \"number\" },\n          \"rate\": { \"type\": \"number\" },\n          \"amount\": { \"type\": \"number\" }\n        }\n      }\n    },\n    \"Total Due Amount\": { \"type\": \"number\" },\n    \"Currency\": {\n      \"type\": \"string\"      \n    }\n  }\n}",
+        "options": {
+          "systemPromptTemplate": "=You are an expert data extraction system. Extract invoice information from the provided email and invoice text.\n\nOutput ONLY a valid JSON object with the following keys:\n- \"Description\" (string): short 1-2 line summary of the invoice purpose, e.g., \"Monthly database usage\"\n- \"Invoice Number\" (string)\n- \"Invoice Date\" (string): date the invoice was issued, in DDMMYYYY format\n- \"Due Date\" (string): payment due date, in DDMMYYYY format (leave empty if not found)\n- \"Supplier Name\" (string)\n- \"Line items\" (array of objects): each with \"description\", \"quantity\" (number), \"rate\" (number), \"amount\" (number)\n- \"Total Due Amount\" (number): total amount due, without currency symbol\n- \"Currency\" (string): currency code or symbol (e.g., \"AUD\", \"$\", leave empty if not found)\n\nRules:\n1. NEVER add explanations, comments, markdown, or text before or after the JSON.\n2. NEVER use ```json or ``` — output raw JSON only.\n3. If a field is missing, use an empty string \"\" for strings, 0 for numbers, or empty array [] where appropriate.\n4. Ensure all quotes are double quotes and JSON is valid.\n\nNow extract the data:"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        1136,
+        -160
+      ],
+      "id": "163fcfcb-ec2b-4bda-a89b-28b8364ff157",
+      "name": "Invoice Info Extractor"
+    },
+    {
+      "parameters": {
+        "content": "## Selection of Emails for Invoice Processing",
+        "height": 672,
+        "width": 720,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -592,
+        -224
+      ],
+      "id": "2a02cf26-9128-4848-b41e-e66116475397",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Data Extraction from Invoice",
+        "height": 448,
+        "width": 1280
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        160,
+        -224
+      ],
+      "id": "7b95c262-c6c5-4244-8e3d-c8c8b1c2274a",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Sending Invoice to Finance Team",
+        "height": 496,
+        "width": 640,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        160,
+        240
+      ],
+      "id": "f816b78c-f75e-404c-97f6-22ae168b9e78",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('One Email at a Time').item.json.headers.from }}",
+        "subject": "={{ $('Create Email').item.json.subject }}",
+        "message": "={{ $('Create Email').item.json.html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        528
+      ],
+      "id": "cc297baf-8bb4-4235-8c7f-b94ecc3c3224",
+      "name": "Send a message",
+      "webhookId": "96282b80-9578-42a9-a327-90fe1279658e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4.1-nano",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1248,
+        80
+      ],
+      "id": "d1347ee7-8071-40aa-b5d0-1a7bf5c5383e",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "",
+          "name": "OpenRouter account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get Required Data": {
+      "main": [
+        [
+          {
+            "node": "Simple Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Email": {
+      "main": [
+        [
+          {
+            "node": "email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Attachment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attachment": {
+      "main": [
+        [
+          {
+            "node": "Invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "email": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Invoice": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Invoice Info Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Line-Items": {
+      "main": [
+        [
+          {
+            "node": "Create Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Email": {
+      "main": [
+        [
+          {
+            "node": "One Email at a Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One Email at a Time": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Is Invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Email": {
+      "main": [
+        [
+          {
+            "node": "Convert email to simple text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert email to simple text": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email record": {
+      "main": [
+        [
+          {
+            "node": "One Email at a Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Invoice": {
+      "main": [
+        [
+          {
+            "node": "Contains attachement",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contains attachement": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Required Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Required Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Invoice Info Extractor": {
+      "main": [
+        [
+          {
+            "node": "Line-Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Email record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Invoice Info Extractor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "b10aeae9-7bc1-45da-8002-c567f8830691",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "03f590a58500d495fc4092d3a4d6e9499622536c0e114b0ecd19809ff526a72c"
+  },
+  "id": "5XsbRFyWmCH_SyyA1041Y",
+  "tags": [
+    {
+      "updatedAt": "2026-01-29T18:54:37.990Z",
+      "createdAt": "2026-01-29T18:54:37.990Z",
+      "id": "",
+      "name": "Ready"
+    }
+  ]
+}
